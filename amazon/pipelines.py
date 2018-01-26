@@ -8,11 +8,12 @@
 import psycopg2
 
 class AmazonPipeline(object):
-    def open_spider(self, spider):
-        hostname = ''#your host
-        username = ''#your username
-        password = ''#your password
-        database = ''#database name
+
+    def __init__(self):
+        hostname = 'postgresql-instance.cqqt0bcnbhnk.us-east-1.rds.amazonaws.com'
+        username = 'Jonathan'
+        password = 'theworldshallknowtruepain'  # your password
+        database = 'majorproject_db'
         self.connection = psycopg2.connect(host=hostname, user=username, password=password, dbname=database)
         self.cur = self.connection.cursor()
 
@@ -21,7 +22,7 @@ class AmazonPipeline(object):
         self.connection.close()
 
     def process_item(self, item, spider):
-        self.cur.execute("insert into review_data_raw(customer_comments_title,customer_comments_author,customer_comments_date,customer_comments_rating,customer_comments_text) values(%s,%s,%s,%s,%s)",
+        self.cur.execute("insert into review_data_raw (customer_comments_title, customer_comments_author, customer_comments_date, customer_comments_rating, customer_comments_text) values (%s, %s, %s, %s, %s);",
                          (item['customer_comments_title'], item['customer_comments_author'], item['customer_comments_date'], item['customer_comments_rating'],item['customer_comments_text']))
         self.connection.commit()
         return item

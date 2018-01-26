@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 from amazon.items import AmazonItem
-from scrapy.spiders import CrawlSpider
+from scrapy.spiders import Spider
 from scrapy import signals
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-class ComputersSpider(CrawlSpider):
+class ComputersSpider(Spider):
 
     name = 'computers'
     allowed_domains = ["www.amazon.com"]
@@ -34,9 +34,9 @@ class ComputersSpider(CrawlSpider):
 
     def send_mail(self, message, title):
         self.log("Attempting to send email notification.")
-        gmailUser = ''#programs email address on gmail
-        gmailPassword = ''#password you made
-        recipient = ''#whoever you're sending the mail to
+        gmailUser = ''#program's gmail account
+        gmailPassword = ''#password
+        recipient = ''#whoever
 
         msg = MIMEMultipart()
         msg['From'] = gmailUser

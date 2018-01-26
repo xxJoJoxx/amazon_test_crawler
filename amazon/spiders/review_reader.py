@@ -25,7 +25,7 @@ class review_reader(CrawlSpider):
     def from_crawler(cls, crawler, *args, **kwargs):
         spider = super(review_reader, cls).from_crawler(crawler, *args, **kwargs)
         crawler.signals.connect(spider.spider_error, signal=signals.spider_error)#catches any error signal and any important info to pass to function spider_error
-        crawler.signals.connect(spider.spider_closed, signal=signals.spider_closed)
+        crawler.signals.connect(spider.spider_closed, signal=signals.spider_closed)#cathes spider termination signal to call email notifier
         return spider
 
     def spider_error(self,failure,response,spider):
@@ -37,9 +37,9 @@ class review_reader(CrawlSpider):
     def send_error_alert(self,failure,response,title):
         self.log("Attempting to send email notification.")
         '''Note email addresses that uses gmail has to enable unsecure app connection in order for this to work'''
-        gmailUser = ''  # programs email address on gmail
-        gmailPassword = ''  # password you made
-        recipient = ''  # whoever you're sending the mail to
+        gmailUser = ''#program's email address
+        gmailPassword = ''#password
+        recipient = ''#whoever
 
         message = str(failure) + str(response)
         msg = MIMEMultipart()
@@ -61,9 +61,9 @@ class review_reader(CrawlSpider):
     def send_mail(self, message, title):
         self.log("Attempting to send email notification.")
         '''Same as above'''
-        gmailUser = ''  # programs email address on gmail
-        gmailPassword = ''  # password you made
-        recipient = ''  # whoever you're sending the mail to
+        gmailUser = ''
+        gmailPassword = ''
+        recipient = ''
 
         msg = MIMEMultipart()
         msg['From'] = gmailUser
@@ -80,9 +80,9 @@ class review_reader(CrawlSpider):
         mailServer.close()
         self.log("Mail sent")
 
+
     def parse(self, response):
         items = {}
-        review_list = []
         reviews = response.xpath('//div[@data-hook="review"]')#gets a count of all items on the page
         # loop through sel times to add each comment
         for index, sel in enumerate(reviews):#enumerate loops and increments for us :D
@@ -100,11 +100,6 @@ class review_reader(CrawlSpider):
             items[index]['customer_comments_date'] = ''.join(review_date[index]).strip('on')
             items[index]['customer_comments_rating'] = ''.join(rating[index]).replace('out of 5 stars', '')#removes text from rating
             items[index]['customer_comments_text'] = ''.join(review_body[index]).strip().replace('<br>', ' ').replace('<span data-hook="review-body" class="a-size-base review-text">', '').replace('</span>', '')
+            yield items[index]  # returns everything in a record form for insertion
 
-            review_list.append(items[index])#return dict
-
-        data = {
-            'reviews': review_list#adds list to dict, this is really just for formating output if it's json for example
-        }
-        yield data#returns everything
 
