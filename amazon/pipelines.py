@@ -10,10 +10,10 @@ import psycopg2
 class AmazonPipeline(object):
 
     def __init__(self):
-        hostname = 'postgresql-instance.cqqt0bcnbhnk.us-east-1.rds.amazonaws.com'
-        username = 'Jonathan'
-        password = 'theworldshallknowtruepain'  # your password
-        database = 'majorproject_db'
+        hostname = ''#db connection string
+        username = ''#your db username
+        password = '' # your password
+        database = ''#database name
         self.connection = psycopg2.connect(host=hostname, user=username, password=password, dbname=database)
         self.cur = self.connection.cursor()
 
