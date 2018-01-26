@@ -7,21 +7,10 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from scrapy.http.request import Request
 
-from pymongo import MongoClient
-
-client = MongoClient()
-
 class review_reader(CrawlSpider):
     name = 'review_reader'
     allowed_domains = ["www.amazon.com"]
-    start_urls = []
-
-    # to enable spider to read list of links from a text file
-    # def __init__(self, filename=None):
-    #     if filename:
-    #         with open('log.txt', 'r') as f:
-    #             self.start_urls = [url.strip() for url in f.readlines()]
-
+    start_urls = []#leave this blank as in our case we are going to read them from a file
 
     def start_requests(self):
         with open('log.txt', 'r') as f:
@@ -35,21 +24,22 @@ class review_reader(CrawlSpider):
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
         spider = super(review_reader, cls).from_crawler(crawler, *args, **kwargs)
-        crawler.signals.connect(spider.spider_error, signal=signals.spider_error)
+        crawler.signals.connect(spider.spider_error, signal=signals.spider_error)#catches any error signal and any important info to pass to function spider_error
         crawler.signals.connect(spider.spider_closed, signal=signals.spider_closed)
         return spider
 
     def spider_error(self,failure,response,spider):
-        spider.send_error_alert(self,failure,response,"Alert!!! an error occurred with the spider")
+        spider.send_error_alert(self,failure,response,"Alert!!! an error occurred with the spider")#calls email function
 
     def spider_closed(self, spider):
         spider.send_mail("Crawling is complete. Thank you for using me :)", "Scraper Report")
 
     def send_error_alert(self,failure,response,title):
         self.log("Attempting to send email notification.")
-        gmailUser = 'crawl.notify.group@gmail.com'
-        gmailPassword = 'theworldshallknowtruepain'
-        recipient = 'jklz521@gmail.com'
+        '''Note email addresses that uses gmail has to enable unsecure app connection in order for this to work'''
+        gmailUser = ''  # programs email address on gmail
+        gmailPassword = ''  # password you made
+        recipient = ''  # whoever you're sending the mail to
 
         message = str(failure) + str(response)
         msg = MIMEMultipart()
@@ -70,9 +60,10 @@ class review_reader(CrawlSpider):
 
     def send_mail(self, message, title):
         self.log("Attempting to send email notification.")
-        gmailUser = 'crawl.notify.group@gmail.com'
-        gmailPassword = 'theworldshallknowtruepain'
-        recipient = 'jklz521@gmail.com'
+        '''Same as above'''
+        gmailUser = ''  # programs email address on gmail
+        gmailPassword = ''  # password you made
+        recipient = ''  # whoever you're sending the mail to
 
         msg = MIMEMultipart()
         msg['From'] = gmailUser
@@ -92,28 +83,28 @@ class review_reader(CrawlSpider):
     def parse(self, response):
         items = {}
         review_list = []
-        # response = response.replace(body=response.body.replace('<br>', '\n'))
-        reviews = response.xpath('//div[@data-hook="review"]')
+        reviews = response.xpath('//div[@data-hook="review"]')#gets a count of all items on the page
         # loop through sel times to add each comment
-        for index, sel in enumerate(reviews):
-            items[index] = AmazonItem()
+        for index, sel in enumerate(reviews):#enumerate loops and increments for us :D
+            items[index] = AmazonItem()#instance of the items class (items.py)
+            '''tries to find all text present in the stipulated paths and saves them to an item'''
             title = sel.xpath('//a[@data-hook ="review-title"]//text()').extract()
             author = sel.xpath('//a[contains(@data-hook, "review-author")]/text()').extract()
             rating = sel.xpath('//i[contains(@data-hook, "review-star-rating")]/span[contains(@class,"a-icon-alt")]/text()').extract()
             review_date = sel.xpath('//span[@data-hook="review-date"]//text()').extract()
             review_body = sel.xpath('//span[contains(@data-hook, "review-body")]').extract()
 
+            '''Because the path selectors return a list we must iterate each record to add the database'''
             items[index]['customer_comments_title'] = ''.join(title[index]).strip()
             items[index]['customer_comments_author'] = ''.join(author[index]).strip()
             items[index]['customer_comments_date'] = ''.join(review_date[index]).strip('on')
-            items[index]['customer_comments_rating'] = ''.join(rating[index]).replace('out of 5 stars', '')
-            # *** the important bit****
+            items[index]['customer_comments_rating'] = ''.join(rating[index]).replace('out of 5 stars', '')#removes text from rating
             items[index]['customer_comments_text'] = ''.join(review_body[index]).strip().replace('<br>', ' ').replace('<span data-hook="review-body" class="a-size-base review-text">', '').replace('</span>', '')
 
-            review_list.append(items[index])
+            review_list.append(items[index])#return dict
 
         data = {
-            'reviews': review_list
+            'reviews': review_list#adds list to dict, this is really just for formating output if it's json for example
         }
-        yield data
+        yield data#returns everything
 

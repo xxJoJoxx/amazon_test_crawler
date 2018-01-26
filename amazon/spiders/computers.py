@@ -26,7 +26,7 @@ class ComputersSpider(CrawlSpider):
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
         spider = super(ComputersSpider, cls).from_crawler(crawler, *args, **kwargs)
-        crawler.signals.connect(spider.spider_closed, signal=signals.spider_closed)
+        crawler.signals.connect(spider.spider_closed, signal=signals.spider_closed)#catches spider close signal and call emailer method before full termination
         return spider
 
     def spider_closed(self, spider):
@@ -34,9 +34,9 @@ class ComputersSpider(CrawlSpider):
 
     def send_mail(self, message, title):
         self.log("Attempting to send email notification.")
-        gmailUser = 'crawl.notify.group@gmail.com'
-        gmailPassword = 'theworldshallknowtruepain'
-        recipient = 'jklz521@gmail.com'
+        gmailUser = ''#programs email address on gmail
+        gmailPassword = ''#password you made
+        recipient = ''#whoever you're sending the mail to
 
         msg = MIMEMultipart()
         msg['From'] = gmailUser
@@ -55,12 +55,13 @@ class ComputersSpider(CrawlSpider):
 
     def parse(self, response):
         items = {}
-        asin = response.xpath('//li[@class="s-result-item s-result-card-for-container a-declarative celwidget  "]')
+        asin = response.xpath('//li[@class="s-result-item s-result-card-for-container a-declarative celwidget  "]')#getcount of all items on the page
         for index, sel in enumerate(asin):
             items[index] = AmazonItem()  # instantiates items class
-            id = sel.xpath('//li/@data-asin').extract()
-            items[index]['product_id'] = ''.join(id[index]).strip()
+            id = sel.xpath('//li/@data-asin').extract()#looks for all asins present in item list inside div container
+            items[index]['product_id'] = ''.join(id[index]).strip()#as extract return's a selectorlist with all the results we have to pull out and save each index for writing purposes
             with open('log.txt', 'a') as f:
+                #writes links with appended asins
                 f.write('https://www.amazon.com/product-reviews/{}/ref=cm_cr_getr_d_paging_btm_1?ie=UTF8&reviewerType=all_reviews&pageNumber='.format(items[index]['product_id']))
                 f.write('\n')
-        yield items
+        yield items#another way to return
