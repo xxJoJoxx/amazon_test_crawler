@@ -85,7 +85,7 @@ class review_reader(CrawlSpider):
         items = {}
         reviews = response.xpath('//div[@data-hook="review"]')#gets a count of all items on the page
         # loop through sel times to add each comment
-        for index, sel in enumerate(reviews):#enumerate loops and increments for us :D
+        for index, sel in enumerate(reviews):#enumerate because I need the index element and data for later use :)
             items[index] = AmazonItem()#instance of the items class (items.py)
             '''tries to find all text present in the stipulated paths and saves them to an item'''
             title = sel.xpath('//a[@data-hook ="review-title"]//text()').extract()
