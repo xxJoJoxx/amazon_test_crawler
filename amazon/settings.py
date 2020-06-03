@@ -56,7 +56,7 @@ DOWNLOADER_MIDDLEWARES = {
     'scrapy_crawlera.CrawleraMiddleware': 600
 }
 CRAWLERA_ENABLED = True
-CRAWLERA_APIKEY = '8ed1891aa7d7465da14de33566a3eb64'
+CRAWLERA_APIKEY = ''
 
 # Enable or disable extensions
 # See https://doc.scrapy.org/en/latest/topics/extensions.html
